@@ -24,7 +24,7 @@ async function fetchProductDetails(query: string) {
   }
 }
 
-export const ProductPage = () => {
+export const Page = () => {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
 
@@ -64,4 +64,4 @@ export const ProductPage = () => {
   );
 }
 
-export default ProductPage;
+export default Page;
