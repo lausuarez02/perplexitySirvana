@@ -24,7 +24,7 @@ async function fetchProductDetails(query: string) {
   }
 }
 
-export const Page = () => {
+const Page = () => {
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState('');
 
