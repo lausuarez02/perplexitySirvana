@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
          await mongoose.connect(process.env.MONGO_URI as string,{
           dbName: 'sirvana', // Specify database name if needed
         });
+        console.log(process.env.MONGO_URI, "thest mongo")
+        console.log(process.env.OPENAI_API_KEY, "test OPENAI_API_KEY")
       }
 
       const { query } = await req.json();

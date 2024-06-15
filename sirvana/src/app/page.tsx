@@ -36,6 +36,7 @@ export default function Home() {
     setLoading(true);
     console.log(query, "checkout query front");
     const result = await fetchProductDetails(query)
+    console.log(result,"tes the result")
     setSearchResults(result);
     router.push( `/search/${encodeURIComponent(query)}`
     );
