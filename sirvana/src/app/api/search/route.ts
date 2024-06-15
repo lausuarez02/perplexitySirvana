@@ -41,6 +41,11 @@ function embedProductsInText(products:any) {
 export async function POST(req: NextRequest) {
     try {
       // Connect to MongoDB
+      if (!process.env.MONGO_URI) {
+        console.error("Error: MONGO_URI environment variable is not defined.");
+        // Handle the error appropriately, e.g., throw an error or exit the application
+      }
+      
       if (!mongoose.connection.readyState) {
          await mongoose.connect(process.env.MONGO_URI as string,{
           dbName: 'sirvana', // Specify database name if needed
