@@ -1,11 +1,11 @@
 "use client"
-import { useState, useCallback, useEffect } from 'react';
+import React,{ useState, useCallback, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation'
 import {useSearch} from '../../context'
 
-async function fetchProductDetails(query) {
+async function fetchProductDetails(query: string) {
   try {
     console.log(query, "checkout query fetchProductDetails");
 
@@ -24,25 +24,43 @@ async function fetchProductDetails(query) {
   }
 }
 
+type ResponseType = {
+  gptResponse?: {
+    answer: string;
+    // Add other properties if necessary
+  };
+  productText?:string
+  // Add other properties from your response object
+}
+
+
 const Page = () => {
   const [inputValue, setInputValue] = useState('');
   const [querySearch, setQuerySearch] = useState('');
-  const [response, setResponse] = useState('');
+  const [response, setResponse] = useState<ResponseType>({});
   const [loading, setLoading] = useState(false);
   const {searchResults, setSearchResults}  = useSearch();
   useEffect(() => {
     if (searchResults) {
-      setResponse(searchResults)
+      const formattedResponse: ResponseType = {
+        productText: searchResults,
+      };
+
+      if(formattedResponse.productText){
+        setResponse(formattedResponse.productText as ResponseType)
+
+      }
+      
       console.error('No search results found');
     }
 
     return () => {
-      setSearchResults(null)
+      setSearchResults('')
     }
   }, [searchResults]);
 
   const router = useRouter();
-  const handleSearch = async (e) => {
+  const handleSearch = async (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setQuerySearch(inputValue);
@@ -68,10 +86,9 @@ const Page = () => {
           <p className="text-gray-700">{response.gptResponse?.answer}</p>
         </div>
       </div>
-      {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full"> */}
-        {/* Use dangerouslySetInnerHTML only if necessary */}
-        <div dangerouslySetInnerHTML={{ __html: response.productText }} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full"/>
-      {/* </div> */}
+        {response.productText && (
+                  <div dangerouslySetInnerHTML={{ __html: response.productText }} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full"/>
+        )}
     </div>
 
     {/* Search bar fixed to bottom */}
