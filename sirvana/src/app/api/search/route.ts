@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import mongoose,{ObjectId} from 'mongoose';
+import mongoose,{Connection} from 'mongoose';
 import OpenAI from 'openai';
 import Products from '../../../models/Product';
 import {generateEmbedding, searchAssistant} from '../../utils/utils.ts'
@@ -8,10 +8,10 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
 });
 
-function embedProductsInText(products) {
+function embedProductsInText(products:any) {
   let textTemplate = "";
 
-  products.forEach((product, index) => {
+  products.forEach((product:any) => {
     const productCard = `
     <div class="flex flex-col mb-2 border-1 border-gray-200 bg-gray-200/20 rounded-xl hover:cursor-pointer" id="product-${product._id}">
       <div class="rounded-t-[10px]">
@@ -41,11 +41,8 @@ function embedProductsInText(products) {
 export async function POST(req: NextRequest) {
     try {
       // Connect to MongoDB
-      let client = ''
       if (!mongoose.connection.readyState) {
-        client = await mongoose.connect(process.env.MONGO_URI as string,{
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
+         await mongoose.connect(process.env.MONGO_URI as string,{
           dbName: 'sirvana', // Specify database name if needed
         });
       }
@@ -78,7 +75,7 @@ export async function POST(req: NextRequest) {
         }
       ];
     
-      const aggCursor = Products.aggregate(aggPipeline);
+      const aggCursor = Products.aggregate(aggPipeline as any);
       console.log('Aggregation Cursor:', aggCursor);
   
       const products = [];

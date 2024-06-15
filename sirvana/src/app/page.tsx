@@ -5,7 +5,7 @@ import { faArrowUp } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation'
 import {SearchProvider, useSearch} from './context'
 
-async function fetchProductDetails(query) {
+async function fetchProductDetails(query:string) {
   try {
     console.log(query, "checkout query fetchProductDetails");
 

@@ -1,7 +1,16 @@
 import OpenAI from 'openai';
+
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || '',
   });
+
+  type Chunk = {
+    choices: {
+      delta?: {
+        content?: string;
+      };
+    };
+  };
 export async function generateEmbedding(inputText: string): Promise<number[] | null> {
     try {
       const vectorEmbedding = await openai.embeddings.create({
@@ -12,7 +21,7 @@ export async function generateEmbedding(inputText: string): Promise<number[] | n
       return embedding;
     } catch (error) {
       console.error('Error processing request:', error);
-      return NextResponse.json({ error: 'Internal Server Error' });
+      return null
     }
   }
 
@@ -33,7 +42,7 @@ export async function searchAssistant(userMessage: string): Promise<any> {
         stream: true,
       });
       let jsonResponse = '';
-      for await (const chunk of responseStream.iterator()) {
+      for await (const chunk of (responseStream as any).iterator()) {
         jsonResponse += chunk.choices[0]?.delta?.content || '';
       }
   
