@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose,{Connection} from 'mongoose';
-import OpenAI from 'openai';
 import Products from '../../../models/Product';
 import {generateEmbedding, searchAssistant, embedProductsInText} from '../../utils/utils'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-  dangerouslyAllowBrowser: true 
-});
+
+export const maxDuration = 55
 
 export async function POST(req: NextRequest) {
     try {
