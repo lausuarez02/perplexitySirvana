@@ -3,8 +3,9 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Connection } from 'mongoose'; // Import mongoose Connection type
 
 type ResponseType = {
-  gptResponse?: {
-    answer: string;
+  responseStream?: {
+    products: string;
+    answer: string
     // Add other properties if necessary
   };
   productText?: string;

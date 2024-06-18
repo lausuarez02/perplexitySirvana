@@ -2,62 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import mongoose,{Connection} from 'mongoose';
 import OpenAI from 'openai';
 import Products from '../../../models/Product';
-import {generateEmbedding, searchAssistant} from '../../utils/utils.ts'
+import {generateEmbedding, searchAssistant, embedProductsInText} from '../../utils/utils'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || '',
+  dangerouslyAllowBrowser: true 
 });
-
-function embedProductsInText(products:any) {
-  let textTemplate = "";
-
-  products.forEach((product:any) => {
-    const productCard = `
-    <div class="flex flex-col mb-2 border-1 border-gray-200 bg-gray-200/20 rounded-xl hover:cursor-pointer" id="product-${product._id}">
-      <div class="rounded-t-[10px]">
-      <div class="relative p-2">
-      <div class="rounded-t-[10px]">
-        <div class="relative shadow-black/5 shadow-none rounded-large" style="max-width: fit-content;">
-          <img src="${product.imageUrl}" class="relative opacity-0 shadow-black/5 data-[loaded=true]:opacity-100 shadow-none transition-transform-opacity motion-reduce:transition-none !duration-300 rounded-large object-cover bg-gray-200 border-gray-200 rounded-t-xl z-0" alt="${product.name}" layout="fill" objectfit="cover" data-loaded="true">
-        </div>
-        </div>
-      </div>
-    </div>
-    <div class="flex flex-col pb-4 px-3">
-    <div class="text-primary font-medium text-base sm:text-lg">
-    </div>
-    <p class="text-gray-700 text-sm truncate capitalize pb-1">${product.name}</p>
-    <p class="text-gray-700 text-foreground font-medium text-sm line-clamp-2">${product.description}</p>
-  </div>
-      </div>
-
-      `;
-    textTemplate += productCard;
-  });
-
-  return textTemplate;
-}
 
 export async function POST(req: NextRequest) {
     try {
-      // Connect to MongoDB
       if (!process.env.MONGO_URI) {
         console.error("Error: MONGO_URI environment variable is not defined.");
-        // Handle the error appropriately, e.g., throw an error or exit the application
       }
       
       if (!mongoose.connection.readyState) {
          await mongoose.connect(process.env.MONGO_URI as string,{
           dbName: 'sirvana', // Specify database name if needed
         });
-        console.log(process.env.MONGO_URI, "thest mongo")
-        console.log(process.env.OPENAI_API_KEY, "test OPENAI_API_KEY")
       }
 
       const { query } = await req.json();
       const embedding = await generateEmbedding(query); 
   
-      const gptResponse = (await searchAssistant(query));
       const aggPipeline = [
         {
           $vectorSearch: {
@@ -83,20 +49,20 @@ export async function POST(req: NextRequest) {
       ];
     
       const aggCursor = Products.aggregate(aggPipeline as any);
-      console.log('Aggregation Cursor:', aggCursor);
   
       const products = [];
       for await (const doc of aggCursor) {
         products.push(doc);
       }
 
-      const productText = embedProductsInText(products);
+      const productHtml = embedProductsInText(products);
+      const searchResult = products.map(product => `id: ${product.id}, description: ${product.description}`).join('\n');
   
-      console.log('productText:', productText);
+      const responseStream = await searchAssistant(query, productHtml);
 
       // Disconnect from MongoDB
       await mongoose.disconnect();
-      return NextResponse.json({ products, productText, gptResponse });
+      return NextResponse.json({ responseStream });
     } catch (error) {
       console.error('Error processing request:', error);
       return NextResponse.json({ error: 'Internal Server Error' });
